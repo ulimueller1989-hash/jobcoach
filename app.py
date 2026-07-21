@@ -1,6 +1,7 @@
 import streamlit as st
 import os
 from google import genai
+from google.genai import types
 
 # Seiten-Layout für Smartphones optimieren
 st.set_page_config(page_title="Dein Job-Coach", page_icon="💼", layout="centered")
@@ -8,7 +9,7 @@ st.set_page_config(page_title="Dein Job-Coach", page_icon="💼", layout="center
 st.title("💼 Dein digitaler Job-Coach")
 st.caption("Finde Schritt für Schritt passende Berufe in deiner Region.")
 
-# API-Schlüssel aus Secrets auslesen
+# API-Schlüssel laden
 api_key = st.secrets.get("GEMINI_API_KEY") or os.environ.get("GEMINI_API_KEY")
 
 if not api_key:
@@ -18,7 +19,7 @@ if not api_key:
 # Client initialisieren
 client = genai.Client(api_key=api_key)
 
-# DEIN SYSTEMPROMPT
+# SYSTEMPROMPT
 SYSTEM_PROMPT = """
 # ROLLE UND LOGIK
 Du bist ein hochpräziser KI-Jobcoach für Menschen mit geringen Deutschkenntnissen oder ohne anerkannte Abschlüsse. 
@@ -57,30 +58,39 @@ Erstelle die finale Auswertung in folgender Struktur:
 Stelle ohne Begrüßung direkt die ERSTE Frage aus Phase 1 (PLZ/Wohnort und Mobilität).
 """
 
-# Chat-Session initialisieren
+# Chat-Session und Nachrichten-Verlauf initialisieren
 if "chat" not in st.session_state:
-    st.session_state.chat = client.chats.create(
-        model="gemini-1.5-flash",
-        config=genai.types.GenerateContentConfig(
+    # Modell erstellen (gemini-2.0-flash ist schnell und stabil)
+    st.session_state.chat = client.chats.create(model="gemini-2.0-flash")
+    
+    # Erste Frage vom Modell abrufen mit korrekter System Instruction
+    init_response = client.models.generate_content(
+        model="gemini-2.0-flash",
+        contents="Starte das Interview.",
+        config=types.GenerateContentConfig(
             system_instruction=SYSTEM_PROMPT,
-            temperature=0.3,
+            temperature=0.3
         )
     )
-    first_msg = st.session_state.chat.send_message("Start")
-    st.session_state.messages = [{"role": "assistant", "content": first_msg.text}]
+    
+    st.session_state.messages = [{"role": "assistant", "content": init_response.text}]
 
-# Nachrichten anzeigen
+# Bisherige Nachrichten auf dem Bildschirm anzeigen
 for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         st.write(msg["content"])
 
-# User-Eingabe
+# Nutzereingabe-Feld unten
 if user_input := st.chat_input("Deine Antwort eingeben..."):
+    # 1. Nutzereingabe anzeigen & speichern
     st.session_state.messages.append({"role": "user", "content": user_input})
     with st.chat_message("user"):
         st.write(user_input)
 
+    # 2. Nachricht an den bestehenden Chat senden
     response = st.session_state.chat.send_message(user_input)
+    
+    # 3. KI-Antwort anzeigen & speichern
     st.session_state.messages.append({"role": "assistant", "content": response.text})
     with st.chat_message("assistant"):
         st.write(response.text)
