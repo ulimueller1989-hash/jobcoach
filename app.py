@@ -1,13 +1,21 @@
 import streamlit as st
-import os
 from google import genai
 from google.genai import types
 
-# Seiten-Layout für Smartphones
-st.set_page_config(page_title="Dein Job-Coach", page_icon="💼", layout="centered")
+# API-Client initialisieren
+client = genai.Client(api_key=st.secrets["GEMINI_API_KEY"])
 
-st.title("💼 Dein digitaler Job-Coach")
-st.caption("Finde Schritt für Schritt passende Berufe in deiner Region.")
+# Chat-Session und Verlauf initialisieren
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+    # Fester Start-Text, spart API-Limits beim Laden!
+    erste_frage = "Hallo! Um passende Jobs für dich zu finden, brauche ich ein paar Infos. Wie lautet deine Postleitzahl oder dein Wohnort, und wie bist du mobil (Auto, Fahrrad, Bus/Bahn)?"
+    st.session_state.messages.append({"role": "assistant", "content": erste_frage})
+
+# Nachrichten sauber in der App anzeigen
+for msg in st.session_state.messages:
+    with st.chat_message(msg["role"]):
+        st.write(msg["content"])
 
 # API-Schlüssel laden
 api_key = st.secrets.get("GEMINI_API_KEY") or os.environ.get("GEMINI_API_KEY")
