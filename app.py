@@ -62,9 +62,9 @@ Stelle ohne Begrüßung direkt die ERSTE Frage aus Phase 1 (PLZ/Wohnort und Mobi
 if "messages" not in st.session_state:
     st.session_state.messages = []
     
-    # Erste Antwort direkt vom Modell abfragen
+    # Erste Antwort direkt vom Modell abfragen mit 'gemini-2.0-flash'
     response = client.models.generate_content(
-        model="gemini-1.5-flash-latest",
+        model="gemini-2.0-flash",
         contents="Starte das Interview.",
         config=types.GenerateContentConfig(
             system_instruction=SYSTEM_PROMPT,
@@ -95,7 +95,7 @@ if user_input := st.chat_input("Deine Antwort eingeben..."):
 
     # Antwort generieren
     response = client.models.generate_content(
-        model="gemini-1.5-flash-latest",
+        model="gemini-2.0-flash",
         contents=formatted_contents,
         config=types.GenerateContentConfig(
             system_instruction=SYSTEM_PROMPT,
