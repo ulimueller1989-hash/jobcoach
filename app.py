@@ -62,16 +62,14 @@ Stelle ohne Begrüßung direkt die ERSTE Frage aus Phase 1 (PLZ/Wohnort und Mobi
 if "messages" not in st.session_state:
     st.session_state.messages = []
     
-    # Erste Antwort direkt vom Modell abfragen mit 'gemini-2.0-flash'
-    response = client.models.generate_content(
-        model="gemini-2.0-flash",
-        contents="Starte das Interview.",
-        config=types.GenerateContentConfig(
-            system_instruction=SYSTEM_PROMPT,
-            temperature=0.3
-        )
-    )
-    st.session_state.messages.append({"role": "assistant", "content": response.text})
+    # 💡 OPTIMIERUNG: Erste Frage fest einprogrammieren, um API-Limits zu sparen!
+    erste_frage = "Hallo! Um passende Jobs für dich zu finden, brauche ich ein paar Infos. Wie lautet deine Postleitzahl oder dein Wohnort, und wie bist du mobil (Auto, Fahrrad, Bus/Bahn)?"
+    st.session_state.messages.append({"role": "assistant", "content": erste_frage})
+
+# Nachrichten anzeigen
+for msg in st.session_state.messages:
+    with st.chat_message(msg["role"]):
+        st.write(msg["content"])
 
 # Nachrichten anzeigen
 for msg in st.session_state.messages:
