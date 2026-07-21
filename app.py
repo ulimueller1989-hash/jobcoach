@@ -8,7 +8,7 @@ st.set_page_config(page_title="Dein Job-Coach", page_icon="💼", layout="center
 st.title("💼 Dein digitaler Job-Coach")
 st.caption("Finde Schritt für Schritt passende Berufe in deiner Region.")
 
-# API-Schlüssel aus Secrets oder Umgebungsvariable auslesen
+# API-Schlüssel aus Secrets auslesen
 api_key = st.secrets.get("GEMINI_API_KEY") or os.environ.get("GEMINI_API_KEY")
 
 if not api_key:
@@ -60,7 +60,7 @@ Stelle ohne Begrüßung direkt die ERSTE Frage aus Phase 1 (PLZ/Wohnort und Mobi
 # Chat-Session initialisieren
 if "chat" not in st.session_state:
     st.session_state.chat = client.chats.create(
-        model="gemini-2.5-flash",
+        model="gemini-1.5-flash",
         config=genai.types.GenerateContentConfig(
             system_instruction=SYSTEM_PROMPT,
             temperature=0.3,
